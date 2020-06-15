@@ -119,7 +119,7 @@ describe("Scene Builder", () => {
                         filename: join(audioDir, "dans-test.ogg"),
                         timestamp: 0.234,
                         text: "first I will search for something"
-                    }
+                    },
                 ]
             },
             {
@@ -130,7 +130,7 @@ describe("Scene Builder", () => {
         ]);
         const info = await builder.build({
             filename: join(outputDir, "dans-test-final.mp4"),
-            subtitles: false,
+            subtitles: true,
         });
         expect(info).toBeDefined();
 

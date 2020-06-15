@@ -1,12 +1,12 @@
-import temp from "temp";
 import { tracker } from "./tracker";
 import ffmpeg from "fluent-ffmpeg";
 import { join } from "path";
+import { mkTemp } from "../util";
 
 // NOTE: This file is garbage
 
 export async function generateSilence(time: number): Promise<string> {
-  const outputFile = temp.createWriteStream({ suffix: ".ogg" }).path.toString();
+  const outputFile = mkTemp(".ogg");
   const [promise, resolve, reject] = tracker();
 
   /**
@@ -36,7 +36,7 @@ export function generateSilence2(time: number, sIndex = 1): string {
 }
 
 export async function generateSilence3(time: number): Promise<string> {
-  const outputFile = temp.createWriteStream({ suffix: ".ogg" }).path.toString();
+  const outputFile = mkTemp(".ogg");
   const [promise, resolve, reject] = tracker();
 
   /**

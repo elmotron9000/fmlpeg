@@ -3,14 +3,21 @@ import ffmpeg from "fluent-ffmpeg";
 import { ffprobe } from "../util";
 import Ffmpeg from "fluent-ffmpeg";
 import { resizeVideo } from "./resize-video";
+import { mkTemp } from "../util";
+
 // import { ffprobe } from "../util/ffprobe";
 
 export async function concatenateVideos(
   outputFile: string,
   filenames: string[],
+  subtitleFile: string | null = null,
 ) {
   if (filenames.length === 0) {
     throw new Error("Cannot concatenate zero videos");
+  }
+
+  if (subtitleFile) {
+    console.log("Including subtitle file in concatenateVideos");
   }
 
   if (filenames.length === 1) {
@@ -18,15 +25,20 @@ export async function concatenateVideos(
     return await encodeOne(outputFile, filenames[0]);
   }
 
-  // TODO: Validate video metadata prior to combining
-  // const metadata = await Promise.all(filenames.map((f) => ffprobe(f)));
-  // const sizeMetadata = metadata.map((m) => m.format.size);
-
-  return await complexConcatenate(outputFile, filenames);
+  return await complexConcatenate(outputFile, filenames, subtitleFile);
 }
 
-async function encodeOne(outputFile: string, filename: string) {
-  let [complete, resolve, reject] = tracker();
+async function encodeOne(
+  outputFile: string,
+  filename: string,
+  subtitleFile: string | null = null,
+) {
+  const followupFile = outputFile;
+  if (subtitleFile) {
+    outputFile = mkTemp(".mp4");
+  }
+
+  const [promise, resolve, reject] = tracker();
   ffmpeg(filename)
     .output(outputFile)
     .videoCodec("libx264")
@@ -35,12 +47,24 @@ async function encodeOne(outputFile: string, filename: string) {
     .on("end", resolve.bind(resolve))
     .on("error", reject.bind(reject))
     .run();
+  await promise;
 
-  await complete;
+  if (subtitleFile) {
+    await addSubtitlesTo(followupFile, outputFile, subtitleFile);
+  }
 }
 
-async function simpleConcatenate(outputFile: string, filenames: string[]) {
-  let [complete, resolve, reject] = tracker();
+async function simpleConcatenate(
+  outputFile: string,
+  filenames: string[],
+  subtitleFile: string | null = null,
+) {
+  const followupFile = outputFile;
+  if (subtitleFile) {
+    outputFile = mkTemp(".mp4");
+  }
+
+  const [complete, resolve, reject] = tracker();
   const cmd = ffmpeg();
 
   filenames.forEach(filename => {
@@ -56,9 +80,17 @@ async function simpleConcatenate(outputFile: string, filenames: string[]) {
     .on("error", reject.bind(reject));
 
   await complete;
+
+  if (subtitleFile) {
+    await addSubtitlesTo(followupFile, outputFile, subtitleFile);
+  }
 }
 
-async function complexConcatenate(outputFile: string, filenames: string[]) {
+async function complexConcatenate(
+  outputFile: string,
+  filenames: string[],
+  subtitleFile: string | null = null,
+) {
   const filesMetadata = await Promise.all(filenames.map(f => ffprobe(f)));
   console.log({ formats: filesMetadata.map(m => m.format) });
 
@@ -84,7 +116,7 @@ async function complexConcatenate(outputFile: string, filenames: string[]) {
   });
 
   if (allMatch) {
-    return simpleConcatenate(outputFile, filenames);
+    return simpleConcatenate(outputFile, filenames, subtitleFile);
   }
 
   console.info("Resolutions do not all match, resizing videos!");
@@ -106,9 +138,28 @@ async function complexConcatenate(outputFile: string, filenames: string[]) {
     )),
   );
 
-  return simpleConcatenate(outputFile, resizedFiles);
+  return simpleConcatenate(outputFile, resizedFiles, subtitleFile);
 }
 
 function getResolution(video: Ffmpeg.FfprobeStream): string {
   return `${video.width}x${video.height}`;
+}
+
+async function addSubtitlesTo(
+  outputFile: string,
+  inputVideo: string,
+  subtitles: string,
+) {
+  const [promise, resolve, reject] = tracker();
+  ffmpeg()
+    .input(inputVideo)
+    .input(subtitles)
+    .addOption(["-c", "copy", "-c:s", "mov_text"])
+    .output(outputFile)
+    .on("start", console.info.bind(console))
+    .on("end", resolve.bind(resolve))
+    .on("error", reject.bind(reject))
+    .run();
+
+  await promise;
 }

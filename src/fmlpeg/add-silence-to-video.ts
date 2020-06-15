@@ -1,11 +1,10 @@
-import temp from "temp";
 import ffmpeg from "fluent-ffmpeg";
 import { join } from "path";
 import { tracker } from "./tracker";
-import { getLengthOfFile } from "../util";
+import { getLengthOfFile, mkTemp } from "../util";
 
 export async function addSilenceToVideo(inputVideo: string): Promise<string> {
-  const filename = temp.createWriteStream({ suffix: ".mp4" }).path.toString();
+  const filename = mkTemp(".mp4");
   const duration = await getLengthOfFile(inputVideo);
   if (duration === null) {
     throw new Error(

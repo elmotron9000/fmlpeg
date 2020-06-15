@@ -1,12 +1,12 @@
 import ffmpeg from "fluent-ffmpeg";
-import temp from "temp";
 import { tracker } from "./tracker";
+import { mkTemp } from "../util";
 
 export async function resizeVideo(
   filename: string,
   resolution: string,
 ): Promise<string> {
-  const newFile = temp.createWriteStream({ suffix: ".mp4" }).path.toString();
+  const newFile = mkTemp(".mp4");
   const [promise, resolve, reject] = tracker();
 
   ffmpeg(filename)

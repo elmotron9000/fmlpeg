@@ -20,7 +20,7 @@ import {
   addSilenceToVideo,
   photoToVideo,
 } from "../fmlpeg";
-import { getLengthOfFile, writeFile, ffprobe } from "../util";
+import { getLengthOfFile, writeFile, ffprobe, mkTemp } from "../util";
 import { generateSrtEntry } from "../util/srt";
 import { hasAudioStream } from "../util/has-audio-streams";
 
@@ -65,7 +65,10 @@ export class SceneBuilder {
       }
 
       await Promise.all(this.buildTracker.map(t => t[0]));
-      await this.joinVideos(filename, this.buildTempFiles);
+      const subtitleFile = additionalFields.subtitles
+        ? additionalFields.subtitles
+        : null;
+      await this.joinVideos(filename, this.buildTempFiles, subtitleFile);
 
       return { filename, ...additionalFields };
     } catch (err) {
@@ -84,9 +87,13 @@ export class SceneBuilder {
   private async joinVideos(
     outputFile: string,
     filenames: string[],
+    subtitleFile: string | null,
   ): Promise<void> {
     console.log(`Concatenating ${filenames.length} video(s)`);
-    await concatenateVideos(outputFile, filenames);
+    if (subtitleFile) {
+      console.info("Joining videos with subtitles");
+    }
+    await concatenateVideos(outputFile, filenames, subtitleFile);
     console.log("Completed concatenation");
   }
 
@@ -146,18 +153,13 @@ export class SceneBuilder {
    * the specified duration with the overlayed audio clips
    */
   private async buildPhotoScene(scene: PhotoScene, i: number): Promise<string> {
-    const photoVideoFile = this.createTempVideoFile().path.toString();
+    const photoVideoFile = mkTemp(".mp4");
     await photoToVideo(photoVideoFile, scene.filename, scene.duration);
     return photoVideoFile;
   }
 
   private setupTempFile(i: number): void {
-    const tmpFile = this.createTempVideoFile();
-    this.buildTempFiles[i] = tmpFile.path.toString();
-  }
-
-  private createTempVideoFile() {
-    return temp.createWriteStream({ suffix: ".mp4" });
+    this.buildTempFiles[i] = mkTemp(".mp4");
   }
 
   private setTracker(i: number): void {
@@ -172,10 +174,15 @@ export class SceneBuilder {
    * Generates an SRT file and returns the path, using the filename for the output
    * video as an indicator to where to place the SRT file
    */
-  private async buildSubtitles(filename: string): Promise<string> {
-    const split = filename.split(".");
-    split.pop();
-    const srtFile = [...split, "srt"].join(".");
+  private async buildSubtitles(filename?: string): Promise<string> {
+    let srtFile;
+    if (filename) {
+      const split = filename.split(".");
+      split.pop();
+      srtFile = [...split, "srt"].join(".");
+    } else {
+      srtFile = mkTemp(".srt");
+    }
 
     const startTimes = await this.getAccumulativeStartTime();
 

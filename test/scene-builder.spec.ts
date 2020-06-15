@@ -59,7 +59,7 @@ describe("Scene Builder", () => {
         expect(length).not.toBeNull();
     });
 
-    it.only("should generate a video from a photo", async () => {
+    it("should generate a video from a photo", async () => {
         const scene: Scene = {
             type: "photo",
             duration: 12,
@@ -79,7 +79,33 @@ describe("Scene Builder", () => {
         expect(length).not.toBeNull();
     });
 
-    it("should generate subtitles", async () => {
+    it.only("should generate subtitles", async () => {
+        const scene: Scene = {
+            type: "video",
+            filename: join(videoDir, "silent-shooting-star.mp4"),
+            audio: [
+                {
+                    filename: join(audioDir, "shooting-star.ogg"),
+                    timestamp: 4,
+                    text: "doo do doo doo do doo do doo doo doo do",
+                },
+                {
+                    filename: join(audioDir, "sample-tts.mp3"),
+                    timestamp: 16,
+                    text:  "You can do all kinds of interesting things, all you need to do is click a link",
+                },
+            ]
+        };
 
+        const builder = new SceneBuilder([scene]);
+
+        const info = await builder.build({
+            filename: join(outputDir, "subtitle-test.mp4"),
+            subtitles: true,
+        });
+        expect(info).toBeDefined();
+
+        const length = await getLengthOfFile(info.filename);
+        expect(length).not.toBeNull();
     });
 });

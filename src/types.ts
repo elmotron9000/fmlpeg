@@ -53,6 +53,10 @@ export interface BuiltWithSubtitles extends Built {
 
 export type BuiltWithoutSubtitles = File;
 
+export interface SubtitleClipInfo extends AudioClip {
+    duration: number;
+}
+
 /** Miscellanious Types */
 export type Tracker = [Promise<unknown>, Func, Func];
 export type Func = (...args: any[]) => void;

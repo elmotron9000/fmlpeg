@@ -1,7 +1,9 @@
-import { Scene, VideoScene, PhotoScene, Tracker, BuildWithSubtitlesOptions, BuiltWithSubtitles, BuildWithoutSubtitlesOptions, BuiltWithoutSubtitles, BuildOptions, Built, OptionalBuiltFields } from "../types";
+import { Scene, VideoScene, PhotoScene, Tracker, BuildWithSubtitlesOptions, BuiltWithSubtitles, BuildWithoutSubtitlesOptions, BuiltWithoutSubtitles, BuildOptions, Built, OptionalBuiltFields, SubtitleClipInfo } from "../types";
 import temp from "temp";
 import { concatenateVideos, addAudioClipsToVideo, tracker } from "../fmlpeg";
 import { photoToVideo } from "../fmlpeg/photo-to-video";
+import { getLengthOfFile, writeFile } from "../util";
+import { generateSrtEntry } from "../util/srt";
 
 export class SceneBuilder {
     private static get defaultBuildOptions() {
@@ -30,12 +32,13 @@ export class SceneBuilder {
             
             const additionalFields: OptionalBuiltFields = {};
             if (options.subtitles) {
-                const subtitles = this.buildSubtitles();
-                additionalFields.subtitles = subtitles;
+                const subPromise = this.buildSubtitles(filename).then((subtitles) => {
+                    additionalFields.subtitles = subtitles;
+                })
+                this.addToBuildTracker(subPromise);
             }
     
             await Promise.all(this.buildTracker.map(t => t[0]));
-
             await this.joinVideos(filename, this.buildTempFiles);
 
             return { filename, ...additionalFields };
@@ -125,7 +128,74 @@ export class SceneBuilder {
         this.buildTracker[i] = tracker();
     }
 
-    private buildSubtitles(): string {
-        return "Unimplemented";
+    private addToBuildTracker(p: Promise<any>): void {
+        this.buildTracker.push([p, () => {}, () => {}]);
+    }
+
+    /**
+     * Generates an SRT file and returns the path, using the filename for the output
+     * video as an indicator to where to place the SRT file
+     */
+    private async buildSubtitles(filename: string): Promise<string> {
+        const split = filename.split(".");
+        split.pop();
+        const srtFile = [...split, "srt"].join(".");
+
+        const startTimes = await this.getAccumulativeStartTime();
+
+        const collectiveAudioInfo = await Promise.all(
+            this.scenes.map((scene, sceneIndex) => {
+                return scene.audio.map(async (audio): Promise<SubtitleClipInfo> => {
+                    const duration = await getLengthOfFile(audio.filename);
+                    if (duration === null) {
+                        throw new Error("Could not retrieve duration of " + scene.filename);
+                    }
+                    return {
+                        ...audio,
+                        timestamp: audio.timestamp + startTimes[sceneIndex],
+                        duration,
+                    };
+                });
+            }).reduce((list, audio) => [...list, ...audio], [])
+        );
+
+        console.debug({ collectiveAudioInfo });
+
+        const content = collectiveAudioInfo.map((info, index) => {
+            return generateSrtEntry(index, info);
+        }).join("\n\n");
+
+        console.info(`Writing subtitles to file ${srtFile}`);
+        await writeFile(srtFile, content);
+
+        return srtFile;
+    }
+
+    /**
+     * Generates a list of duration offsets for all audio clips
+     */
+    private async getAccumulativeStartTime(): Promise<number[]> {
+        const startTimesUnchecked = await Promise.all(this.scenes.map(scene => getLengthOfFile(scene.filename)));
+        startTimesUnchecked.some((value) => {
+            if (value === null) {
+                throw new Error("Invalid file used to build subtitles");
+            }
+        });
+
+        const startTimes = [...startTimesUnchecked as number[]];
+        startTimes.forEach((value, index) => {
+            if (index === 0) {
+                return;
+            }
+
+            startTimes[index] = value! + startTimes[index - 1]!;
+        });
+
+        startTimes.unshift(0);
+        startTimes.pop();
+
+        console.debug({ startTimes });
+
+        return startTimes;
     }
 }

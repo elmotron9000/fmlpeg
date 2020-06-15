@@ -8,25 +8,27 @@ export async function concatenateVideos(outputFile: string, filenames: string[])
     }
 
     if (filenames.length === 1) {
-        return transformOne(outputFile, filenames[0]);
+        console.log("Transforming a single video");
+        return await encodeOne(outputFile, filenames[0]);
     }
 
     // TODO: Validate video metadata prior to combining
     // const metadata = await Promise.all(filenames.map((f) => ffprobe(f)));
     // const sizeMetadata = metadata.map((m) => m.format.size);
 
-    return simpleConcatenate(outputFile, filenames);
+    return await simpleConcatenate(outputFile, filenames);
 }
 
-async function transformOne(outputFile: string, filename: string) {
+async function encodeOne(outputFile: string, filename: string) {
     let [complete, resolve, reject] = tracker();
-    const cmd = ffmpeg(filename)
-    cmd.mergeToFile(outputFile)
+    ffmpeg(filename)
+        .output(outputFile)
         .videoCodec("libx264")
         .audioCodec("aac")
         .on("start", console.info.bind(console))
         .on("end", resolve.bind(resolve))
         .on("error", reject.bind(reject))
+        .run();
 
     await complete;
 }

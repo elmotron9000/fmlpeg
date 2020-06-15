@@ -18,6 +18,7 @@ export async function photoToVideo(
         .loop(duration)
         // .addOption(["-r", "1/5"])
         .videoCodec("libx264")
+        .noAudio()
         // .addOption(["-t", `${duration}`])
         .on("start", console.info.bind(console))
         .on("end", resolve.bind(reject))

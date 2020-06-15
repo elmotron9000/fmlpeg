@@ -43,7 +43,7 @@ export class SceneBuilder {
             throw err;
         } finally {
             console.log("Cleaning up temp files");
-            temp.cleanupSync();
+            // temp.cleanupSync();
         }
     }
 
@@ -118,7 +118,7 @@ export class SceneBuilder {
     }
 
     private createTempVideoFile() {
-        return temp.createWriteStream({ suffix: ".avi" });
+        return temp.createWriteStream({ suffix: ".mp4" });
     }
 
     private setTracker(i: number): void {

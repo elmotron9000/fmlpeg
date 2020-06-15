@@ -8,7 +8,7 @@ Exposing useful functions for Elmotron9000 using `fluent-ffmpeg`.
 - [x] Add audio clips into videos
 - [x] Get duration of media file
 - [x] Generate video from photo
-- [ ] Generate subtitles for video
+- [x] Generate subtitles for video
 
 ## How to Use
 

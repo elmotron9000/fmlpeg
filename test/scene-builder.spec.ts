@@ -79,7 +79,7 @@ describe("Scene Builder", () => {
         expect(length).not.toBeNull();
     });
 
-    it.only("should generate subtitles", async () => {
+    it("should generate subtitles", async () => {
         const scene: Scene = {
             type: "video",
             filename: join(videoDir, "silent-shooting-star.mp4"),

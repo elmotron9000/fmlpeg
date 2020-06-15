@@ -12,7 +12,6 @@ export async function addAudioClipsToVideo(
 ): Promise<void> {
     // Get duration information on the source video
     const videoMeta = await ffprobe(videoFile);
-    // console.log({ streams: videoMeta.streams });
     
     const duration = videoMeta.format.duration || null;
     if (duration === null) {
@@ -40,16 +39,7 @@ export async function addAudioClipsToVideo(
     const audioInfo = buildAudioInfo(duration, enhancedClips);
 
     // Include video and all audio clips - include a silent audio clip if no audio in video
-    const video = ffmpeg(videoFile);
-
-    // validate whether we can use the default input 
-    // const videoHasAudio = !!videoMeta.streams.filter((s) => s.codec_type === "audio").length;
-    // if (!videoHasAudio) {
-    //     console.info(`No audio stream in video file: including ${duration} seconds of silence`);
-    //     const filename = await generateSilence3(duration);
-    //     video.input(filename);
-    // }
-
+    const video = ffmpeg(videoFile);    
     audioClips.forEach((info) => {
         video.input(info.filename);
     });
@@ -117,12 +107,6 @@ function buildAudioInfo(duration: number, clips: EnhancedAudioClip[]): AudioInfo
             end: clip.duration,
         }
 
-        // const end = clip.timestamp + clip.duration;
-        // const info: AudioInfo = { index: index + 1, start: clip.timestamp }
-        // if (end <= duration) {
-        //     info.end = end;
-        // }
-
         infoList.push(info);
 
         // Update start time tracker
@@ -163,11 +147,6 @@ function joinAudioFilter(total: number): string {
     const audioFeeds = range(total, +1).map((i) => `[aud${i}]`).join("");
     return `${audioFeeds}concat=n=${total}:v=0:a=1[aout]`;
 }
-
-// function joinAudioWithSilence(total: number): string {
-//     const audioFeeds = range(total, +1).map((i) => i === 1 ? `[s1]` : `[aud${i}]`).join("");
-//     return `${audioFeeds}concat=n=${total}:v=0:a=1[aout]`;
-// }
 
 function range(max: number, offset = 0): number[] {
     return [...Array(max).keys()].map(i => i + offset);

@@ -1,11 +1,9 @@
 import { Scene, VideoScene, PhotoScene, Tracker, BuildWithSubtitlesOptions, BuiltWithSubtitles, BuildWithoutSubtitlesOptions, BuiltWithoutSubtitles, BuildOptions, Built, OptionalBuiltFields, SubtitleClipInfo } from "../types";
 import temp from "temp";
-import { concatenateVideos, addAudioClipsToVideo, tracker } from "../fmlpeg";
-import { photoToVideo } from "../fmlpeg/photo-to-video";
+import { concatenateVideos, addAudioClipsToVideo, tracker, addSilenceToVideo, photoToVideo } from "../fmlpeg";
 import { getLengthOfFile, writeFile, ffprobe } from "../util";
 import { generateSrtEntry } from "../util/srt";
 import { hasAudioStream } from "../util/has-audio-streams";
-import { addSilenceToVideo } from "../fmlpeg/add-silence-to-video";
 
 export class SceneBuilder {
     private static get defaultBuildOptions() {

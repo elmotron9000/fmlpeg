@@ -5,7 +5,7 @@ import { tracker } from "./tracker";
 import { getLengthOfFile } from "../util";
 
 export async function addSilenceToVideo(inputVideo: string): Promise<string> {
-    const filename = temp.createWriteStream({ suffix: ".mp4"}).path.toString();
+    const filename = temp.createWriteStream({ suffix: ".mp4" }).path.toString();
     const duration = await getLengthOfFile(inputVideo);
     if (duration === null) {
         throw new Error(`Input video ${inputVideo} duration could not be determined`);

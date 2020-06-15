@@ -3,6 +3,8 @@ import { tracker } from "./tracker";
 import ffmpeg from "fluent-ffmpeg";
 import { join } from "path";
 
+// NOTE: This file is garbage
+
 export async function generateSilence(time: number): Promise<string> {
     const outputFile = temp.createWriteStream({ suffix: ".ogg" }).path.toString();
     const [promise, resolve, reject] = tracker();
@@ -47,7 +49,6 @@ export async function generateSilence3(time: number): Promise<string> {
         .output(outputFile)
         .input(join(__dirname, "..", "..", "assets", "silence.ogg"))
         .audioCodec("libvorbis")
-        // .loop(time)
         .addOption(["-loop", `${time}`])
         .on("start", console.info.bind(console))
         .on("end", resolve.bind(resolve))

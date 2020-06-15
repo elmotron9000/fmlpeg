@@ -1,6 +1,6 @@
 {
   "name": "@elmotron9000/fmlpeg",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "dist/index.js",
   "scripts": {
     "prebuild": "rm -rf dist",
@@ -8,6 +8,7 @@
     "debug": "TS_NODE_FILES=true nodemon src/index.ts",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
+    "pretest": "rm -rf ./test/resources/output/*.{mp4,srt}",
     "test": "jest",
     "coverage": "jest --coverage",
     "publisher": "rm -rf dist/; npm run build && npm publish --access=public"

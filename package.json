@@ -1,0 +1,61 @@
+{
+  "name": "@0xc/fmlpeg",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "debug": "TS_NODE_FILES=true nodemon src/index.ts",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "publisher": "rm -rf dist/; npm run build && npm publish --access=public"
+  },
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://git.sr.ht/~tcarrio/dialogflow-as-code"
+  },
+  "private": false,
+  "files": [
+    "dist",
+    "!dist/**/*.map"
+  ],
+  "author": "Tom Carrio <tom@carrio.dev>",
+  "devDependencies": {
+    "@types/debug": "^4.1.4",
+    "@types/figlet": "^1.2.0",
+    "@types/fluent-ffmpeg": "^2.1.14",
+    "@types/jest": "^24.9.1",
+    "@types/joi": "^14.3.3",
+    "@types/lodash": "^4.14.129",
+    "@types/node": "^12.12.0",
+    "@types/prettier": "^1.16.4",
+    "@types/temp": "^0.8.34",
+    "@types/uuid": "^3.4.5",
+    "@typescript-eslint/eslint-plugin": "^1.7.0",
+    "@typescript-eslint/parser": "^1.7.0",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.2.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "jest": "^24.9.0",
+    "jest-junit": "^6.4.0",
+    "nodemon": "^1.19.0",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.0.3",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "commander": "^2.20.0",
+    "figlet": "^1.2.3",
+    "fluent-ffmpeg": "^2.1.2",
+    "joi": "^14.3.1",
+    "lodash": "^4.17.11",
+    "prettier": "^1.16.4",
+    "reflect-metadata": "^0.1.13",
+    "temp": "^0.9.1",
+    "typedi": "^0.8.0",
+    "uuid": "^3.3.2"
+  }
+}

@@ -2,8 +2,10 @@ import { Scene, VideoScene, PhotoScene, Tracker, BuildWithSubtitlesOptions, Buil
 import temp from "temp";
 import { concatenateVideos, addAudioClipsToVideo, tracker } from "../fmlpeg";
 import { photoToVideo } from "../fmlpeg/photo-to-video";
-import { getLengthOfFile, writeFile } from "../util";
+import { getLengthOfFile, writeFile, ffprobe } from "../util";
 import { generateSrtEntry } from "../util/srt";
+import { hasAudioStream } from "../util/has-audio-streams";
+import { addSilenceToVideo } from "../fmlpeg/add-silence-to-video";
 
 export class SceneBuilder {
     private static get defaultBuildOptions() {
@@ -81,6 +83,13 @@ export class SceneBuilder {
                 console.log(`Finished photo scene ${i}`);
 
             case "video":
+                // If there is no audio in the video, create a new video with audio
+                const metadata = await ffprobe(scene.filename);
+                if (!hasAudioStream(metadata)) {
+                    const newFile = await addSilenceToVideo(scene.filename);
+                    scene.filename = newFile;
+                }
+                
                 console.log(`Started video scene ${i} with file ${scene.filename}`);
                 const completeFile = await this.buildVideoScene(scene, i);
                 

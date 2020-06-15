@@ -1,6 +1,7 @@
 import temp from "temp";
 import { tracker } from "./tracker";
 import ffmpeg from "fluent-ffmpeg";
+import { join } from "path";
 
 export async function generateSilence(time: number): Promise<string> {
     const outputFile = temp.createWriteStream({ suffix: ".ogg" }).path.toString();
@@ -22,6 +23,32 @@ export async function generateSilence(time: number): Promise<string> {
         ])
         .audioCodec("libvorbis")
         .output(outputFile)
+        .on("start", console.info.bind(console))
+        .on("end", resolve.bind(resolve))
+        .on("error", reject.bind(reject))
+        .run();
+
+    await promise;
+    return outputFile;
+}
+
+export function generateSilence2(time: number, sIndex = 1): string {
+    return `aevalsrc=0:d=${time}[s${sIndex}]`;
+}
+
+export async function generateSilence3(time: number): Promise<string> {
+    const outputFile = temp.createWriteStream({ suffix: ".ogg" }).path.toString();
+    const [promise, resolve, reject] = tracker();
+    
+    /**
+     * Uses an included silent ogg to generate a clip of $time length
+     */
+    ffmpeg()
+        .output(outputFile)
+        .input(join(__dirname, "..", "..", "assets", "silence.ogg"))
+        .audioCodec("libvorbis")
+        // .loop(time)
+        .addOption(["-loop", `${time}`])
         .on("start", console.info.bind(console))
         .on("end", resolve.bind(resolve))
         .on("error", reject.bind(reject))

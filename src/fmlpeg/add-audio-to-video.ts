@@ -3,7 +3,7 @@ import ffmpeg from "fluent-ffmpeg";
 import { tracker } from "./tracker";
 import { getLengthOfFile } from "../util/file-duration";
 import { ffprobe } from "../util";
-import { generateSilence } from "./generate-silence";
+// import { generateSilence3 } from "./generate-silence";
 
 export async function addAudioClipsToVideo(
     videoFile: string,
@@ -41,12 +41,14 @@ export async function addAudioClipsToVideo(
 
     // Include video and all audio clips - include a silent audio clip if no audio in video
     const video = ffmpeg(videoFile);
-    
-    const videoHasAudio = !!videoMeta.streams.filter((s) => s.codec_type === "audio").length;
-    if (!videoHasAudio) {
-        console.info(`No audio stream in video file: including ${duration} seconds of silence`);
-        video.input(await generateSilence(duration));
-    }
+
+    // validate whether we can use the default input 
+    // const videoHasAudio = !!videoMeta.streams.filter((s) => s.codec_type === "audio").length;
+    // if (!videoHasAudio) {
+    //     console.info(`No audio stream in video file: including ${duration} seconds of silence`);
+    //     const filename = await generateSilence3(duration);
+    //     video.input(filename);
+    // }
 
     audioClips.forEach((info) => {
         video.input(info.filename);
@@ -54,9 +56,15 @@ export async function addAudioClipsToVideo(
 
     // Generate complex filter
     if (audioInfo.length > 0) {
-        const filters = audioInfo.map((info, index) => audioInfoToComplexFilter(info, index + 1));
+        const filters: string[] = [];
+
+        filters.push(...audioInfo.map((info, index) => audioInfoToComplexFilter(info, index + 1)));
+        
+        // if (videoHasAudio) {
         filters.push(joinAudioFilter(audioInfo.length))
+        // }
         const complexFilters = filters.join("; ");
+
         video
             .complexFilter(complexFilters)
             // NOTE: Tried to use .map("0:v"), but it wrote it as `-map [0:v]`
@@ -135,7 +143,8 @@ function buildAudioInfo(duration: number, clips: EnhancedAudioClip[]): AudioInfo
 }
 
 function audioInfoToComplexFilter(audioInfo: AudioInfo, overall: number): string {
-    return `[${audioInfo.index}:a]atrim=${getRange(audioInfo)},asetpts=PTS-STARTPTS[aud${overall}]`;
+    const device = `${audioInfo.index}:a`;
+    return `[${device}]atrim=${getRange(audioInfo)},asetpts=PTS-STARTPTS[aud${overall}]`;
 }
 
 function getRange(audioInfo: AudioInfo): string {
@@ -154,6 +163,11 @@ function joinAudioFilter(total: number): string {
     const audioFeeds = range(total, +1).map((i) => `[aud${i}]`).join("");
     return `${audioFeeds}concat=n=${total}:v=0:a=1[aout]`;
 }
+
+// function joinAudioWithSilence(total: number): string {
+//     const audioFeeds = range(total, +1).map((i) => i === 1 ? `[s1]` : `[aud${i}]`).join("");
+//     return `${audioFeeds}concat=n=${total}:v=0:a=1[aout]`;
+// }
 
 function range(max: number, offset = 0): number[] {
     return [...Array(max).keys()].map(i => i + offset);

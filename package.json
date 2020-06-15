@@ -1,6 +1,6 @@
 {
-  "name": "@0xc/fmlpeg",
-  "version": "0.1.0",
+  "name": "@elmotron9000/fmlpeg",
+  "version": "0.1.0-beta0",
   "main": "dist/index.js",
   "scripts": {
     "prebuild": "rm -rf dist",
@@ -16,6 +16,9 @@
   "repository": {
     "type": "git",
     "url": "https://git.sr.ht/~tcarrio/dialogflow-as-code"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "private": false,
   "files": [

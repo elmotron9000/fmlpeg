@@ -36,12 +36,12 @@ describe("Scene Builder", () => {
                 {
                     filename: join(audioDir, "shooting-star.ogg"),
                     timestamp: 4,
-                    content: "doo do doo",
+                    text: "doo do doo",
                 },
                 {
                     filename: join(audioDir, "sample-tts.mp3"),
                     timestamp: 16,
-                    content:  "You can do all kinds of interesting things, all you need to do is click a link",
+                    text:  "You can do all kinds of interesting things, all you need to do is click a link",
                 },
             ],
             filename: join(videoDir, "silent-shooting-star.mp4"),

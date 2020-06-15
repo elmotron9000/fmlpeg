@@ -6,7 +6,7 @@ export interface File {
 }
 
 export interface AudioClip extends File {
-    content: AudioContent | string;
+    text: AudioContent | string;
     timestamp: number;
 }
 

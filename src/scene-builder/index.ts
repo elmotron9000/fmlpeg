@@ -13,7 +13,7 @@ export class SceneBuilder {
     private readonly buildTempFiles: string[] = [];
     private readonly buildTracker: Tracker[] = [];
 
-    public constructor(private readonly scenes: Scene[]) {
+    public constructor(private readonly scenes: Scene[] = []) {
         temp.track();
     }
 

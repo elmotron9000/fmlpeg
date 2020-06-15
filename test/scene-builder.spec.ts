@@ -109,7 +109,7 @@ describe("Scene Builder", () => {
         expect(length).not.toBeNull();
     });
 
-    it.only("should create a more realistic example than this crap", async () => {
+    it("should create a more realistic example than this crap", async () => {
         const builder = new SceneBuilder([
             {
                 filename: join(videoDir, "dans-test.mp4"),

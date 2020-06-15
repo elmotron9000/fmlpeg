@@ -1,6 +1,6 @@
 {
   "name": "@elmotron9000/fmlpeg",
-  "version": "0.1.0-beta3",
+  "version": "0.1.0-beta4",
   "main": "dist/index.js",
   "scripts": {
     "prebuild": "rm -rf dist",

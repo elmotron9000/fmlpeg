@@ -20,6 +20,7 @@ export async function photoToVideo(
         .videoCodec("libx264")
         .noAudio()
         // .addOption(["-t", `${duration}`])
+        .addOption(["-pix_fmt", "yuv420p"])
         .on("start", console.info.bind(console))
         .on("end", resolve.bind(reject))
         .on("error", reject.bind(resolve))

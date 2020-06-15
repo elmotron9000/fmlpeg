@@ -59,7 +59,7 @@ describe("Scene Builder", () => {
         expect(length).not.toBeNull();
     });
 
-    it("should generate a video from a photo", async () => {
+    it.only("should generate a video from a photo", async () => {
         const scene: Scene = {
             type: "photo",
             duration: 12,

@@ -109,17 +109,17 @@ describe("Scene Builder", () => {
         expect(length).not.toBeNull();
     });
 
-    it("should create a more realistic example than this crap", async () => {
+    it.only("should create a more realistic example than this crap", async () => {
         const builder = new SceneBuilder([
             {
                 filename: join(videoDir, "dans-test.mp4"),
                 type: "video",
                 audio: [
-                {
-                    filename: join(audioDir, "dans-test.ogg"),
-                    timestamp: 0.234,
-                    text: "first I will search for something"
-                }
+                    {
+                        filename: join(audioDir, "dans-test.ogg"),
+                        timestamp: 0.234,
+                        text: "first I will search for something"
+                    }
                 ]
             },
             {

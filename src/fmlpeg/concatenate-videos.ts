@@ -1,5 +1,8 @@
 import { tracker } from "./tracker";
 import ffmpeg from "fluent-ffmpeg";
+import { ffprobe } from "../util";
+import Ffmpeg from "fluent-ffmpeg";
+import { resizeVideo } from "./resize-video";
 // import { ffprobe } from "../util/ffprobe";
 
 export async function concatenateVideos(
@@ -19,7 +22,7 @@ export async function concatenateVideos(
   // const metadata = await Promise.all(filenames.map((f) => ffprobe(f)));
   // const sizeMetadata = metadata.map((m) => m.format.size);
 
-  return await simpleConcatenate(outputFile, filenames);
+  return await complexConcatenate(outputFile, filenames);
 }
 
 async function encodeOne(outputFile: string, filename: string) {
@@ -53,4 +56,59 @@ async function simpleConcatenate(outputFile: string, filenames: string[]) {
     .on("error", reject.bind(reject));
 
   await complete;
+}
+
+async function complexConcatenate(outputFile: string, filenames: string[]) {
+  const filesMetadata = await Promise.all(filenames.map(f => ffprobe(f)));
+  console.log({ formats: filesMetadata.map(m => m.format) });
+
+  const videos = filesMetadata
+    .map(f => f.streams)
+    .map(streams => streams.find(s => s.codec_type === "video"))
+    .filter(videoStream => !!videoStream);
+
+  if (videos.length <= 1) {
+    throw new Error("Multiple videos passed but only one found");
+  }
+
+  const v1 = videos[0]!;
+  const res = getResolution(v1);
+  console.debug(`Resolution ${0}: ${res}`);
+  let allMatch = true;
+  videos.slice(1).forEach((video, i) => {
+    const _res = getResolution(video!);
+    console.debug(`Resolution ${i + 1}: ${_res}`);
+    if (_res !== res) {
+      allMatch = false;
+    }
+  });
+
+  if (allMatch) {
+    return simpleConcatenate(outputFile, filenames);
+  }
+
+  console.info("Resolutions do not all match, resizing videos!");
+  if (filenames.length !== videos.length) {
+    throw new Error("Metadata matchup failure");
+  }
+
+  const resizedFiles: string[] = [];
+  const resolution = "1920x1080";
+  resizedFiles.push(
+    ...(await Promise.all(
+      filenames.map((f, i): string | Promise<string> => {
+        if (getResolution(videos[i]!) === resolution) {
+          return f;
+        }
+
+        return resizeVideo(f, resolution);
+      }),
+    )),
+  );
+
+  return simpleConcatenate(outputFile, resizedFiles);
+}
+
+function getResolution(video: Ffmpeg.FfprobeStream): string {
+  return `${video.width}x${video.height}`;
 }

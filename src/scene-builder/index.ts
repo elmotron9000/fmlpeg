@@ -72,7 +72,7 @@ export class SceneBuilder {
       throw err;
     } finally {
       console.log("Cleaning up temp files");
-      // temp.cleanupSync();
+      temp.cleanupSync();
     }
   }
 

@@ -27,6 +27,7 @@ export class SceneBuilder {
     public async build(): Promise<BuiltWithoutSubtitles>;
     public async build(options: BuildOptions = SceneBuilder.defaultBuildOptions): Promise<Built> {
         try {
+            console.log("Starting build");
             const filename = options.filename;
             this.scenes.forEach(this.buildScene.bind(this))
             
@@ -62,6 +63,7 @@ export class SceneBuilder {
     }
 
     private async buildScene(scene: Scene, i: number): Promise<string> {
+        console.log("Starting buildScene");
         this.setupTempFile(i);
         this.setTracker(i);
         

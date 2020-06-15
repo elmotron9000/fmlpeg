@@ -108,4 +108,28 @@ describe("Scene Builder", () => {
         const length = await getLengthOfFile(info.filename);
         expect(length).not.toBeNull();
     });
+
+    it.only("should create a more realistic example than this crap", async () => {
+        const scene: Scene = {
+            filename: join(videoDir, "dans-test.mp4"),
+            type: "video",
+            audio: [
+              {
+                filename: join(audioDir, "dans-test.ogg"),
+                timestamp: 0.234,
+                text: "first I will search for something"
+              }
+            ]
+          };
+
+        const builder = new SceneBuilder([scene]);
+        const info = await builder.build({
+            filename: join(outputDir, "dans-test-final.mp4"),
+            subtitles: false,
+        });
+        expect(info).toBeDefined();
+
+        const length = await getLengthOfFile(info.filename);
+        expect(length).not.toBeNull();
+    });
 });

@@ -13,7 +13,10 @@ export async function getLengthOfFile(filename: string): Promise<number | null> 
 
     try {
         const info = await ffprobe(filename);
+        // console.debug({ filename, info });
+        // console.debug({ filename, format: info.format });
         const duration = info.format.duration;
+        // console.debug({ filename, duration });
         if (typeof duration === "number") {
             return duration;
         }

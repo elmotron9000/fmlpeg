@@ -2,6 +2,8 @@ import { AudioClip } from "../types";
 import ffmpeg from "fluent-ffmpeg";
 import { tracker } from "./tracker";
 import { getLengthOfFile } from "../util/file-duration";
+import { ffprobe } from "../util";
+import { generateSilence } from "./generate-silence";
 
 export async function addAudioClipsToVideo(
     videoFile: string,
@@ -9,7 +11,10 @@ export async function addAudioClipsToVideo(
     audioClips: AudioClip[] = []
 ): Promise<void> {
     // Get duration information on the source video
-    const duration = await getLengthOfFile(videoFile);
+    const videoMeta = await ffprobe(videoFile);
+    // console.log({ streams: videoMeta.streams });
+    
+    const duration = videoMeta.format.duration || null;
     if (duration === null) {
         throw new Error("Could not determine length of the input video file");
     }
@@ -34,8 +39,15 @@ export async function addAudioClipsToVideo(
     // Generate full audio range info for FFmpeg complex filter
     const audioInfo = buildAudioInfo(duration, enhancedClips);
 
-    // Include video and all audio clips
+    // Include video and all audio clips - include a silent audio clip if no audio in video
     const video = ffmpeg(videoFile);
+    
+    const videoHasAudio = !!videoMeta.streams.filter((s) => s.codec_type === "audio").length;
+    if (!videoHasAudio) {
+        console.info(`No audio stream in video file: including ${duration} seconds of silence`);
+        video.input(await generateSilence(duration));
+    }
+
     audioClips.forEach((info) => {
         video.input(info.filename);
     });
@@ -54,6 +66,7 @@ export async function addAudioClipsToVideo(
     }
 
     let [promise, resolve, reject] = tracker();
+    console.log("Starting audio/video combination");
 
     // Add complex filters, video and audio maps, use original video
     video

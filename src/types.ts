@@ -2,59 +2,59 @@
 export type Scene = PhotoScene | VideoScene;
 
 export interface File {
-    filename: string;
+  filename: string;
 }
 
 export interface AudioClip extends File {
-    text: AudioContent | string;
-    timestamp: number;
+  text: AudioContent | string;
+  timestamp: number;
 }
 
 // TODO: Support TTS types from Google Cloud
 export type AudioContent = string;
 
 export interface BaseScene extends File {
-    audio: AudioClip[]
-    type: "photo" | "video";
+  audio: AudioClip[];
+  type: "photo" | "video";
 }
 
 export interface PhotoScene extends BaseScene {
-    type: "photo";
-    duration: number;
+  type: "photo";
+  duration: number;
 }
 
 export interface VideoScene extends BaseScene {
-    type: "video";
+  type: "video";
 }
 
 /** Scene Builder Types */
 export interface BuildOptions {
-    subtitles: boolean;
-    filename: string;
+  subtitles: boolean;
+  filename: string;
 }
 
 export interface BuildWithSubtitlesOptions extends BuildOptions {
-    subtitles: true;
+  subtitles: true;
 }
 
 export interface BuildWithoutSubtitlesOptions extends BuildOptions {
-    subtitles: false;
+  subtitles: false;
 }
 
 export interface Built extends File {
-    subtitles?: string;
+  subtitles?: string;
 }
 
 export type OptionalBuiltFields = Pick<Built, "subtitles">;
 
 export interface BuiltWithSubtitles extends Built {
-    subtitles: string;
+  subtitles: string;
 }
 
 export type BuiltWithoutSubtitles = File;
 
 export interface SubtitleClipInfo extends AudioClip {
-    duration: number;
+  duration: number;
 }
 
 /** Miscellanious Types */

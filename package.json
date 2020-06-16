@@ -16,7 +16,7 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://git.sr.ht/~tcarrio/dialogflow-as-code"
+    "url": "https://github.com/elmotron9000/fmlpeg.git"
   },
   "publishConfig": {
     "access": "public"
